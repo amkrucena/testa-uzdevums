@@ -20,6 +20,10 @@ const props = defineProps({
         type: Array as PropType<string[]>,
         required: true,
     },
+    errors: {
+        type: Array as PropType<string[]>,
+        required: false
+    }
 })
 
 const searchParams = new URLSearchParams(window.location.search);
@@ -80,6 +84,14 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
 <template>
     <Layout>
         <div class="container m-auto">
+            <div
+                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-5 mx-4"
+                 role="alert"
+                v-for="error in errors"
+            >
+                <strong class="font-bold">Holy smokes! </strong>
+                <span class="block sm:inline">{{error}}</span>
+            </div>
             <div class="flex max-md:flex-col-reverse auto-cols-max gap-10 w-full">
                 <div class="filters w-full md:max-w-64">
                     <div class="grid grid-flow-row auto-rows-max gap-4 px-4">

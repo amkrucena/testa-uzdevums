@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -36,14 +37,20 @@ class IndexController extends Controller
                 $currencyArray = explode(',', $currencyArray);
                 foreach ($currencyArray as $currency) {
                     if ($currency && !in_array($currency, $currencies)) {
-                        throw ValidationException::withMessages(["Wrong currency given $currency"]);
+                        throw ValidationException::withMessages(["Wrong currency given - $currency"]);
                     }
                 }
             }
+
+            if (array_key_exists('startDate', $validatedData)
+                && Carbon::parse($validatedData['startDate'])->isBefore(Carbon::parse($validatedData['endDate'])->subMonths(12))) {
+                throw ValidationException::withMessages(["Date range cannot be larger than 12 months!"]);
+            }
+
         } catch (ValidationException $exception) {
             // Legit request cannot come in without the orderId parameter
             $default = $exchangeRateRetrievalService->getExchangeRates(
-                date('Y-m-d'),
+                Carbon::now()->subDays(12)->format('Y-m-d'),
                 date('Y-m-d'),
                 []
             );
@@ -53,6 +60,7 @@ class IndexController extends Controller
                 'rates' => $default['rates'],
                 'currencies' => $currencies,
                 'availableDates' => $availableDates,
+                'errors' => Arr::flatten($exception->errors()),
             ]);
         }
 
