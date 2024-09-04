@@ -10,8 +10,7 @@ use App\ExchangeRates\services\ExchangeRateService;
 use App\Wrappers\XmlReaderWrapper;
 use Carbon\Carbon;
 use Illuminate\Config\Repository;
-use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Response;
 use Illuminate\Log\LogManager;
@@ -27,6 +26,7 @@ class ExchangeRateServiceTest extends TestCase
     private ExchangeRateRepository $exchangeRateRepository;
     private LogManager $logManager;
     private Repository $config;
+    private CacheRepository $cacheRepository;
 
     public function setUp(): void
     {
@@ -34,6 +34,7 @@ class ExchangeRateServiceTest extends TestCase
         $this->xmlReaderWrapper = Mockery::mock(XmlReaderWrapper::class);
         $this->exchangeRateRepository = Mockery::mock(ExchangeRateRepository::class);
         $this->logManager = Mockery::mock(LogManager::class);
+        $this->cacheRepository = Mockery::mock(CacheRepository::class);
 
         $this->config = Mockery::mock(Repository::class);
         $this->config->shouldReceive('get')
@@ -51,7 +52,8 @@ class ExchangeRateServiceTest extends TestCase
             $this->xmlReaderWrapper,
             $this->exchangeRateRepository,
             $this->logManager,
-            $this->config
+            $this->config,
+            $this->cacheRepository
         );
 
         $exchangeRateService->getExchangeRates('20240903');
@@ -67,7 +69,8 @@ class ExchangeRateServiceTest extends TestCase
             $this->xmlReaderWrapper,
             $this->exchangeRateRepository,
             $this->logManager,
-            $this->config
+            $this->config,
+            $this->cacheRepository
         );
         $this->expectException(WrongDateException::class);
         $exchangeRateService->getExchangeRates('19980903');
@@ -82,7 +85,8 @@ class ExchangeRateServiceTest extends TestCase
             $this->xmlReaderWrapper,
             $this->exchangeRateRepository,
             $this->logManager,
-            $this->config
+            $this->config,
+            $this->cacheRepository
         );
 
         $exchangeRateService->getExchangeRates('20240903');
@@ -98,8 +102,11 @@ class ExchangeRateServiceTest extends TestCase
             $this->xmlReaderWrapper,
             $this->exchangeRateRepository,
             $this->logManager,
-            $this->config
+            $this->config,
+            $this->cacheRepository
         );
+
+        $this->cacheRepository->shouldReceive('forget')->times(2);
 
         $result = $exchangeRateService->getExchangeRatesForDays(2);
 

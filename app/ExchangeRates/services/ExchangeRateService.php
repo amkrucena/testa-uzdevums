@@ -10,6 +10,7 @@ use App\ExchangeRates\repositories\ExchangeRateRepository;
 use App\Wrappers\XmlReaderWrapper;
 use Carbon\Carbon;
 use Illuminate\Config\Repository;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Log\LogManager;
 use Throwable;
@@ -28,6 +29,7 @@ class ExchangeRateService
         private readonly ExchangeRateRepository  $exchangeRateRepository,
         private readonly LogManager              $logManager,
         private readonly Repository              $config,
+        private readonly CacheRepository         $cacheRepository
     )
     {
         $this->exchangeRateUrl = $this->config->get('bank.exchange_rate_url') ?? '';
@@ -58,6 +60,9 @@ class ExchangeRateService
             $dayCount++;
             $i++;
         }
+
+        $this->cacheRepository->forget(ExchangeRateRetrievalService::DATES_CACHE_KEY);
+        $this->cacheRepository->forget(ExchangeRateRetrievalService::CURRENCIES_CACHE_KEY);
 
         return $results;
     }

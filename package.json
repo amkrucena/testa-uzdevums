@@ -18,5 +18,9 @@
         "vite": "^5.0",
         "vue": "^3.5.0",
         "vue-tsc": "^2.1.4"
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "v-calendar": "^3.1.2"
     }
 }
