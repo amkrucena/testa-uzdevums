@@ -6,11 +6,8 @@
 
         <title>Testa uzdevums</title>
 
-        @vite([
-            "resources/css/app.css",
-            "resources/js/app.ts",
-            "resources/js/Pages/{$page['component']}.vue"
-         ])
+        @vite("resources/css/app.css")
+        @vite("resources/js/app.ts")
         @inertiaHead
     </head>
     <body>
