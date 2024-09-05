@@ -120,7 +120,7 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
                                 mode="date"
                                 timezone="Europe/Riga"
                                 :min-date="availableDates[availableDates.length - 1]"
-                                :max-date="new Date(availableDates[0])"
+                                :max-date="new Date()"
                                 :attributes="attributes"
                             />
 
