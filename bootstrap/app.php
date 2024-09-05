@@ -21,7 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command(GetExchangeRates::class)
             ->dailyAt("15:30")
-            ->timezone('Europe/Riga');
+            ->timezone('Europe/Riga')
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
