@@ -73,6 +73,14 @@ const attributes = ref([
     ...formattedDates
 ]);
 
+function selectCurrency(currency: string) {
+    if (selectedCurrencies.value.includes(currency)) {
+        selectedCurrencies.value = selectedCurrencies.value.filter((selectedCurrency) =>  selectedCurrency !== currency);
+        return;
+    }
+
+    selectedCurrencies.value.push(currency);
+}
 
 watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
     const currencyString = newCurrency.join(',');
@@ -85,7 +93,7 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
     const newUrl = window.location.pathname + '?' + searchParams.toString();
 
     router.get(newUrl);
-});
+},{ deep: true });
 </script>
 
 <template>
@@ -95,6 +103,7 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
                 class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-5 mx-4"
                  role="alert"
                 v-for="error in errors"
+                :key="error"
             >
                 <strong class="font-bold">Holy smokes! </strong>
                 <span class="block sm:inline">{{error}}</span>
@@ -102,15 +111,28 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
             <div class="flex max-md:flex-col-reverse auto-cols-max gap-10 w-full">
                 <div class="filters w-full md:max-w-64">
                     <div class="grid grid-flow-row auto-rows-max gap-4 px-4">
-                        <div>
-                            <select
-                                multiple
-                                id="currency"
-                                v-model="selectedCurrencies"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full h-52 p-2.5"
+                        <div class="grid grid-cols-3 items-center mb-4 gap-1.5">
+                            <div
+                                v-for="currency in currencies"
+                                :key="currency"
+                                class="flex items-center"
                             >
-                                <option :value="currency" v-for="currency in currencies">{{ currency }}</option>
-                            </select>
+                                <input
+                                    :id="'default-checkbox'+currency"
+                                    type="checkbox"
+                                    class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                    :value="currency"
+                                    :checked="selectedCurrencies.includes(currency)"
+                                    @click="selectCurrency(currency)"
+                                >
+                                <label
+                                    :for="'default-checkbox'+currency"
+                                    class="ms-2"
+                                >
+                                    {{ currency }}
+                                </label>
+                            </div>
+
                         </div>
 
                         <div>
@@ -162,7 +184,7 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
                                 <td
                                     class="border-b border-slate-100 p-4 text-right"
                                     v-for="date in dates"
-                                    :key="date"
+                                    :key="'body-'+date"
                                 >
                                     {{ rate[date] }}
                                 </td>
