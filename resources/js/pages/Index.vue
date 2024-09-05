@@ -23,6 +23,10 @@ const props = defineProps({
     errors: {
         type: Array as PropType<string[]>,
         required: false
+    },
+    defaultDateRange: {
+        type: Number,
+        required: false,
     }
 })
 
@@ -30,8 +34,11 @@ const searchParams = new URLSearchParams(window.location.search);
 const startDate = searchParams.get('startDate');
 const endDate = searchParams.get('endDate');
 
+const defaultStartDate = new Date();
+defaultStartDate.setDate(defaultStartDate.getDate() - (props.defaultDateRange ?? 10));
+
 const range = ref({
-    start: startDate ? new Date(startDate) : new Date(),
+    start: startDate ? new Date(startDate) : defaultStartDate,
     end: endDate ? new Date(endDate) : new Date(),
 });
 
@@ -128,7 +135,7 @@ watch([selectedCurrencies, range], ([newCurrency, newDates]) => {
                     </div>
                 </div>
 
-                <div class="overflow-hidden px-4">
+                <div class="overflow-hidden px-4 w-full">
                     <div class="rates mm-8 overflow-auto h-[400px] md:h-[calc(100vh-250px)] w-full">
                         <table class="border-collapse border text-sm">
                             <thead>

@@ -16,6 +16,10 @@ use Inertia\Response;
 
 class IndexController extends Controller
 {
+    private const DATE_RANGE_MONTH_LIMIT = 12;
+    private const DEFAULT_DATA_RANGE_IN_DAYS = 12;
+    private const DEFAULT_DATE_FORMAT = 'Y-m-d';
+
     public function index(
         Request                      $request,
         ExchangeRateRetrievalService $exchangeRateRetrievalService
@@ -43,15 +47,17 @@ class IndexController extends Controller
             }
 
             if (array_key_exists('startDate', $validatedData)
-                && Carbon::parse($validatedData['startDate'])->isBefore(Carbon::parse($validatedData['endDate'])->subMonths(12))) {
+                && Carbon::parse($validatedData['startDate'])->isBefore(
+                    Carbon::parse($validatedData['endDate'])->subMonths(self::DATE_RANGE_MONTH_LIMIT))
+            ) {
                 throw ValidationException::withMessages(["Date range cannot be larger than 12 months!"]);
             }
 
         } catch (ValidationException $exception) {
             // Legit request cannot come in without the orderId parameter
             $default = $exchangeRateRetrievalService->getExchangeRates(
-                Carbon::now()->subDays(12)->format('Y-m-d'),
-                date('Y-m-d'),
+                Carbon::now()->subDays(self::DEFAULT_DATA_RANGE_IN_DAYS)->format(self::DEFAULT_DATE_FORMAT),
+                date(self::DEFAULT_DATE_FORMAT),
                 []
             );
 
@@ -61,12 +67,14 @@ class IndexController extends Controller
                 'currencies' => $currencies,
                 'availableDates' => $availableDates,
                 'errors' => Arr::flatten($exception->errors()),
+                'defaultDateRange' => self::DEFAULT_DATA_RANGE_IN_DAYS
             ]);
         }
 
         $data = $exchangeRateRetrievalService->getExchangeRates(
-            $validatedData['startDate'] ?? Carbon::now()->subDays(12)->format('Y-m-d'),
-            $validatedData['endDate'] ?? date('Y-m-d'),
+            $validatedData['startDate'] ?? Carbon::now()->subDays(self::DEFAULT_DATA_RANGE_IN_DAYS)
+                                                                ->format(self::DEFAULT_DATE_FORMAT),
+            $validatedData['endDate'] ?? date(self::DEFAULT_DATE_FORMAT),
             $currencyArray ?: []
         );
 
@@ -75,6 +83,7 @@ class IndexController extends Controller
             'rates' => $data['rates'],
             'currencies' => $currencies,
             'availableDates' => $availableDates,
+            'defaultDateRange' => self::DEFAULT_DATA_RANGE_IN_DAYS
         ]);
     }
 }
